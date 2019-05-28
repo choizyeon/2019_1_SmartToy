@@ -1,85 +1,99 @@
-
-#include <SoftwareSerial.h>
- 
-SoftwareSerial BTSerial(4, 5);
- 
-int in1 = 9;
-int in2 = 6;
-int in3 = 10;
-int in4 = 11;
-
+int IN1 = 9;
+int IN2 = 6;
+int IN3 = 10;
+int IN4 = 11;
 int enA = 12;
 int enB = 13;
- 
-int MSpeed = 255;
-//int LSpeed = 255;
- 
-char data;
- 
+
+int motorSpeedA = 0;
+
 void setup() {
-  BTSerial.begin(9600);
+  Serial.begin(9600);
+  pinMode(LED_BUILTIN, OUTPUT);  
+  
   pinMode(enA, OUTPUT);
   pinMode(enB, OUTPUT);
+  pinMode(IN1, OUTPUT);    
+  pinMode(IN2, OUTPUT);
+  pinMode(IN3, OUTPUT);    
+  pinMode(IN4, OUTPUT);
+
+  // Set initial rotation direction
+  // forward
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+
+  // Initial speed
+  motorSpeedA = 50;
+  
 }
  
 void loop() {
-  //analogWrite(enA, MSpeed);
-  //analogWrite(enB, MSpeed);
 
-  
-  if (BTSerial.available()) {
-    data = BTSerial.read();
- 
-    if (data == 'f') { //직진
-      analogWrite(in1, MSpeed);
-      analogWrite(in2, 0);
-      analogWrite(in3, 0);
-      analogWrite(in4, MSpeed); 
-    }
-    if (data == 'r') { //우회전
-      analogWrite(in1, 0);
-      analogWrite(in2, 0);
-      analogWrite(in3, 0);
-      analogWrite(in4, MSpeed);
-    }
-    if (data == 'l') { //좌회전
-      analogWrite(in1, MSpeed);
-      analogWrite(in2, 0);
-      analogWrite(in3, 0);
-      analogWrite(in4, 0);
-    }
-    if (data == 'b') { //후진
-      analogWrite(in1, 0);
-      analogWrite(in2, MSpeed);
-      analogWrite(in3, MSpeed);
-      analogWrite(in4, 0);
-    }
-    if (data == 's') { //정지
-      analogWrite(in1, 0);
-      analogWrite(in2, 0);
-      analogWrite(in3, 0);
-      analogWrite(in4, 0);
-    }
-/*
-    else if(data == 'w')
-    {
-      MSpeed += 10;
+  analogWrite(enB, motorSpeedA); 
+  analogWrite(enA, motorSpeedA); // Send PWM signal to motor A
+}
 
-      if (MSpeed > 255) 
-      {
-        MSpeed = 255;
-      }      
-    }
-    else if(data == 's')
+
+
+void serialEvent() {
+  while (Serial.available()) 
+  {
+    // get the new byte:
+    char inChar = (char)Serial.read();
+    
+    if(inChar == '0')
     {
-      MSpeed -= 10;
+      digitalWrite(IN1, LOW);
+      digitalWrite(IN2, LOW);
+      digitalWrite(IN3, LOW);
+      digitalWrite(IN4, LOW);
+      
+    }
+    else if(inChar == 'f')
+    {
+      digitalWrite(IN1, HIGH);
+      digitalWrite(IN2, LOW);
+      digitalWrite(IN3, HIGH);
+      digitalWrite(IN4, LOW);      
+    }
+    else if(inChar == 'b')
+    {
+      digitalWrite(IN1, LOW);
+      digitalWrite(IN2, HIGH);
+      digitalWrite(IN3, LOW);
+      digitalWrite(IN4, HIGH);      
+    }
+    else if(inChar == 'w')
+    {
+      motorSpeedA = motorSpeedA + 10;
    
-      if (MSpeed < 0) 
+      if (motorSpeedA > 255) 
       {
-        MSpeed = 0;
+        motorSpeedA = 255;
       }
+      
+      Serial.println(motorSpeedA);
+      
     }
-*/
+    else if(inChar == 's')
+    {
+      motorSpeedA = motorSpeedA - 10;
+   
+      if (motorSpeedA < 0) 
+      {
+        motorSpeedA = 0;
+      }
+      
+      Serial.println(motorSpeedA);
+      
+    }
+
+
+
+
     
   }
 }
